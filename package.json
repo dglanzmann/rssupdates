@@ -1,0 +1,27 @@
+{
+  "name": "rssupdates",
+  "version": "0.0.1",
+  "description": "Check all your favourite RSS Feeds for updates",
+  "main": "rssupdates.js",
+  "dependencies": {
+    "feedparser": "^1.1.3",
+    "request": "^2.61.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dglanzmann/rssupdates.git"
+  },
+  "keywords": [
+    "RSS"
+  ],
+  "author": "Dan Glanzmann",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dglanzmann/rssupdates/issues"
+  },
+  "homepage": "https://github.com/dglanzmann/rssupdates#readme"
+}
