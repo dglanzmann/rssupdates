@@ -3,13 +3,8 @@
 # rssupdates
 Check all your favourite RSS Feeds for updates
 
-
-## Requirements
-
-- [feedparser](https://github.com/danmactough/node-feedparser)
-- [request](https://github.com/request/request)
-
 ## Installation
+Install with the [Node.JS](https://nodejs.org/en/download/) package manager
 
 ```bash
 npm install rssupdates
@@ -18,9 +13,16 @@ npm install rssupdates
 ## Usage
 
 ```bash
-node rssupdate.js config        Show all configured RSS URLs
-node rssupdate.js add <URL>     Add a new RSS Feed to config
-node rssupdate.js remove <URL>  Remove RSS Feed from config
-node rssupdate.js check         Check all Feeds for updates
+node rssupdate.js [options]
+
+Options:
+- config        Show all configured RSS URLs
+- add <URL>     Add a new RSS Feed to config
+- remove <URL>  Remove RSS Feed from config
+- check         Check all Feeds for updates
 ```
 
+## Requirements
+
+- [feedparser](https://github.com/danmactough/node-feedparser)
+- [request](https://github.com/request/request)

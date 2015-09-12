@@ -22,9 +22,15 @@ function saveConfig() {
 }
 
 function addToConfig(newFeed) {
-	config.push({ "feed" : newFeed, "date" : MIN_DATE });
-	console.log("Add new RSS Feed: " + newFeed + "\n");
-	saveConfig();
+	readFeed(newFeed, MIN_DATE, function (error, title, entr, lDate) { 
+			if (!error) {
+				config.push({ "feed" : newFeed, "date" : MIN_DATE });
+				console.log("Add new RSS Feed: " + title + "\n");
+				saveConfig();	
+			} else {
+				console.error("Error adding Feed:\n" + newFeed + "\n-> " + error);
+			}
+		});
 }
 
 function removeFromConfig(removeFeed) {
@@ -47,47 +53,58 @@ function showCurrentConfig() {
 	}
 }
 
+function readFeed(feed, lastCheck, callback) {
+	var lastDate = MIN_DATE;
+	var feedTitle;
+	var newEntries = [];
+	var error;
+
+	var req = request(feed);
+	req.on('error', function (err) {
+		error = err;
+	})
+	.pipe(new FeedParser())
+	.on('error', function (err) {
+		error = err;
+	})
+	.on('meta', function (meta) {
+		feedTitle = meta.title;
+	})
+	.on('readable', function() {
+		var stream = this, item;
+		while (item = stream.read()) {
+			if (lastCheck < item.pubDate) {
+				newEntries.push(item);
+			}
+			if (lastDate < item.pubDate) {
+				lastDate = item.pubDate;
+			}
+		}
+	})
+	.on('end', function() {
+		callback(error, feedTitle, newEntries, lastDate);
+	});
+}
+
 function checkAllFeeds() {
 	console.log('\nCheck %s Feeds:\n', config.length);
 	config.forEach(function (entry, index, object) {
-		var lastDate = MIN_DATE;
-		var feedTitle;
-		var newEntries = [];
-		var entryDate = new Date(entry.date);
-
-		var req = request(entry.feed);
-		req.on('error', function (error) {
-			console.error(error);
-		})
-		.pipe(new FeedParser())
-		.on('error', function (error) {
-			console.error(error);
-		})
-		.on('meta', function (meta) {
-			feedTitle = meta.title;
-		})
-		.on('readable', function() {
-			var stream = this, item;
-			while (item = stream.read()) {
-				if (entryDate < item.pubDate) {
-					newEntries.push(item);
+		var lastCheck = new Date(entry.date);
+		readFeed(entry.feed, lastCheck, function (error, feedTitle, newEntries, lastUpdate) {
+			if (!error) {
+				console.log('===== %s =====', feedTitle);
+				console.log(newEntries.length + " updates.\n");
+				newEntries.forEach(function(newEntry) {
+					console.log(newEntry.title + "\n" + newEntry.link + "\n");
+				});		
+				if (lastCheck < lastUpdate) {
+					object[index].date = lastUpdate;
+					saveConfig();
 				}
-				if (lastDate < item.pubDate) {
-					lastDate = item.pubDate;
-				}
+			} else {
+				console.error("Error reading Feed:\n" + entry.feed + "\n-> " + error + "\n");
 			}
-		})
-		.on('end', function() {
-			if (entryDate < lastDate) {
-				object[index].date = lastDate;
-				saveConfig();
-			}
-			console.log('===== %s =====', feedTitle);
-			console.log(newEntries.length + " updates.\n");
-			newEntries.forEach(function(newEntry) {
-				console.log(newEntry.title + "\n" + newEntry.link + "\n");
-			});
-		});
+		});		
 	});
 }
 
@@ -103,8 +120,10 @@ if (process.argv[2] == "add") {
 } else {
 	// show help
 	console.log("\nUsage:");
-	console.log("node rssupdate.js config   \tShow all configured RSS URLs");
-	console.log("node rssupdate.js add <URL>\tAdd a new RSS Feed to config");
-	console.log("node rssupdate.js remove <URL>\tRemove RSS Feed from config");
-	console.log("node rssupdate.js check     \tCheck all Feeds for updates");
+	console.log("node rssupdate.js [options]");
+	console.log("\nOptions:");
+	console.log("- config   \tShow all configured RSS URLs");
+	console.log("- add <URL>\tAdd a new RSS Feed to config");
+	console.log("- remove <URL>\tRemove RSS Feed from config");
+	console.log("- check     \tCheck all Feeds for updates");
 }

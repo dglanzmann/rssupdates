@@ -1,6 +1,6 @@
 {
   "name": "rssupdates",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Check all your favourite RSS Feeds for updates",
   "main": "rssupdates.js",
   "dependencies": {
